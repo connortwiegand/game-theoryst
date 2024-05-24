@@ -1,4 +1,4 @@
-# game-theoryst
+# Game-Theoryst
 
 A package for typsetting games in Typst. 
 
