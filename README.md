@@ -17,7 +17,6 @@ The main function to make strategic form games is `sgamex` (from Martin J. Osbou
 )
 ```
 
-
 ### Underlining
 The default functions for underlining, `hul()` and `vul()`, can be wrapped around math-wrapped (`$..$`) values in the payoff matrix. The underlines are colored by default according to the default colors for names. 
 ```typ
@@ -41,6 +40,76 @@ Since the payoffs are implemented as argument sinks (`..args`) which are passed 
 #### Padding
 There are edge cases where the default padding may be off. This can be mended by passing the named `inset` argument to `sgamex`. `inset` either needs to be a single `length` or a `dictionary` with `x`/`y` keys. This should represent how much _additional_ padding you want.  
 
+### Iterated Deletion (Elimination) of Dominated Strategies
+You can use the `pinit` package to cross out lines. I typically have to tweak the `dx`/`dy` parameters by hand:
+
+```typ
+#sgamex(
+    names: ("A", "B"),
+    strats1: ([$N$] , [$S$] + pin("30"), [$E$] + pin("40"), [$W$] + pin("00")),
+    strats2: ([$W$] + pin("10"), [$E$] + pin("50"), [$F$] + pin("60"), [$A$]),
+    [$6, 4$], [$7, 3$], [$5, 5$], [$6, 6$],
+    [$7, 3$], [$2, 7$], [$4, 6$], [$5, 5$] + pin("31"),
+    [$8, 2$], [$6, 4$], [$3, 7$], [$2, 8$] + pin("41"),
+    [$3, 7$] + pin("11"), [$5, 5$] + pin("51"), [$4, 6$] + pin("61"), [$5, 5$] + pin("01"),
+  )
+
+#pinit-line(
+  stroke: 1.5pt + maroon, 
+  start-dy: -3pt,
+  end-dy: -3pt,
+  start-dx: 2pt,
+  end-dx: 7pt,
+  "00","01")
+
+  #pinit-line(
+  stroke: 1.5pt + maroon, 
+  start-dy: 2pt,
+  end-dy: 3pt,
+  start-dx: -5pt,
+  end-dx: -8pt,
+  "10","11")
+
+  #pinit-line(
+  stroke: 1.5pt + maroon, 
+  start-dy: -3pt,
+  end-dy: -3pt,
+  start-dx: 2pt,
+  end-dx: 5pt,
+  "20","21")
+
+  #pinit-line(
+  stroke: 2pt + maroon, 
+  start-dy: -2pt,
+  end-dy: -2pt,
+  start-dx: 5pt,
+  end-dx: 5pt,
+  "30","31")
+
+  #pinit-line(
+  stroke: 2pt + maroon, 
+  start-dy: -2pt,
+  end-dy: -2pt,
+  start-dx: 5pt,
+  end-dx: 5pt,
+  "40","41")
+
+  #pinit-line(
+  stroke: 2pt + maroon, 
+  start-dy: 4pt,
+  end-dy: 5pt,
+  start-dx: -2pt,
+  end-dx: -6pt,
+  "50","51")
+
+  #pinit-line(
+  stroke: 2pt + maroon, 
+  start-dy: 4pt,
+  end-dy: 5pt,
+  start-dx: -5pt,
+  end-dx: -9pt,
+  "60","61")
+```
 
 ### Importing
 To be published soon.
