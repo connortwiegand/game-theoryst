@@ -9,6 +9,9 @@
 #let _bw = state("no-colors", false)
 #let colorless(bw: true) = _bw.update(bw)
 
+// Counter, needed for pin IDs
+#let _nfg-counter = counter("nfg-counter")
+
 /* Main function to make normal/strategic form games */
   
   // ..args represents payoffs 
@@ -24,6 +27,7 @@
   mixings: none,
   eliminations: none,
   ejust: (:), // -ex: (s11: (x: (0,0), y: (0,0)))
+  gid: none,
   pad: none,
   lazy-cells: false,
   bw: none,
@@ -51,11 +55,37 @@
       // for (k,v) in colors.pairs() {
       //   if bw {colors.at(k) = black}
       // }
+
+
+    /* Mixed Strategies */
+    let (hmix, vmix) = {
+      if type(mixings) == "array" { 
+        assert(mixings.len() == 2, message: "`mixings` must be a dictionary or an array of length 2") 
+        mixings
+      } else if type(mixings) == "dictionary" {
+        assert(("hmix", "vmix").any(k => k in mixings.keys()), message: "Must provide one of (`hmix`, `vmix`) keys to mixings")
+        let dmixings = (hmix: none, vmix: none)
+        for p in mixings.pairs() { dmixings.insert(..p) }
+        (dmixings.hmix, dmixings.vmix)
+      } else {
+        (none, none)
+      }
+    }
+    
+    let (x-col-w, x-row-h) = {
+      (hmix, vmix)
+      .map(mix => if-none(mix, 0pt, auto))
+    }
+
+    hmix = if-none(hmix, ([],) * nrow, hmix)
+    .map(m => mixd(color: colors.hm, m))
+    vmix = if-none(vmix, ([],) * ncol, vmix)
+    .map(m => mixd(color: colors.vm, m))
       
     /* Equalize Cell Dims. */
     // Get array of content widths and heights
     let (warray, harray) = {
-      (s2, s1)
+      (s2 + vmix, s1 + hmix)
       .map(strat =>
         (strat + payoffs)
         .map(ent => measure(ent))
@@ -101,46 +131,25 @@
       cell(inset: sinset, body)
     }
 
-    /* Mixed Strategies */
-    let (hmix, vmix) = {
-      if type(mixings) == "array" { 
-        assert(mixings.len() == 2, message = "`mixings` must be a dictionary or an array of length 2") 
-        mixings
-      } else if type(mixings) == "dictionary" {
-        assert(("hmix", "vmix").any(k => k in mixings.keys()), message: "Must provide one of (`hmix`, `vmix`) keys to mixings")
-        let dmixings = (hmix: none, vmix: none)
-        for p in mixings.pairs() { dmixings.insert(..p) }
-        (dmixings.hmix, dmixings.vmix)
-      } else {
-        (none, none)
-      }
-    }
-    
-    let (x-col-w, x-row-h) = {
-      (hmix, vmix)
-      .map(mix => if-none(mix, 0pt, auto))
-    }
-
-    hmix = if-none(hmix, ([],) * nrow, hmix)
-    vmix = if-none(vmix, ([],) * ncol, vmix)
-
     /* Eliminations */
-      let pin-names = if-none(eliminations, (), eliminations)
+    let pin-names = if-none(eliminations, (), eliminations)
+    let pin-strats = if-none(eliminations, (), eliminations)
+    let elim-id = if-none(gid, "nfg" + _nfg-counter.display() + "-", gid)
 
-    for strat-name in pin-names {
+    for strat-name in pin-strats {
       let e = int(strat-name.at(2))
       if (strat-name.at(1) == "1") {
-        S1.at(e - 1) = S1.at(e - 1) + pin(strat-name + "--start")
-        payoffs.at( (e * ncol) - 1 ) = payoffs.at( (e * ncol) - 1 ) + pin(strat-name + "--end")
+        S1.at(e - 1) = S1.at(e - 1) + pin(elim-id + strat-name + "--start")
+        payoffs.at( (e * ncol) - 1 ) = payoffs.at( (e * ncol) - 1 ) + pin(elim-id + strat-name + "--end")
       } else {
-        S2.at(e - 1) = S2.at(e - 1) + pin(strat-name + "--start")
-        payoffs.at( (nrow * ncol) - (ncol - (e - 1)) ) = payoffs.at( (nrow * ncol) - (ncol - (e - 1)) ) + pin(strat-name + "--end")
+        S2.at(e - 1) = S2.at(e - 1) + pin(elim-id + strat-name + "--start")
+        payoffs.at( (nrow * ncol) - (ncol - (e - 1)) ) = payoffs.at( (nrow * ncol) - (ncol - (e - 1)) ) + pin(elim-id + strat-name + "--end")
       }
     }
 
     // Elimination Adjustments
     let eljust = (:)
-      for name in pin-names {
+      for name in pin-strats {
         eljust.insert(name, (x: (0pt, 0pt), y: (0pt, 0pt)))
         if name in ejust.keys() { 
           for p in ejust.at(name).pairs() { 
@@ -155,16 +164,16 @@
       rows: ((auto, x-row-h, auto), ((rh,) * nrow)).join(),
       columns: ((auto, x-col-w ,auto), ((cw,) * ncol)).join(),
       p2(players.at(1), color: colors.vp, cspn: ncol),
-      blank_cells(), ..(vmix.map(con => { pad-cell((top: 1pt), mixd(color: colors.vm, con)) })), 
+      blank_cells(), ..(vmix.map(m => { pad-cell((top: 1pt), m) })), 
       blank_cells(), ..S2.map(s => pad-cell((top: 1pt), s)),
       p1(players.at(0), color: colors.hp, rspn: nrow),
       ..for i in range(0, nrow) {
-        (pad-cell(0pt, mixd(color: colors.hm, hmix.at(i))), pad-cell(auto, S1.at(i)), ..range(0, ncol).map(j => payoffs.at(i * ncol + j)))
+        (pad-cell(0pt, hmix.at(i)), pad-cell(auto, S1.at(i)), ..range(0, ncol).map(j => payoffs.at(i * ncol + j)))
       }
     )
   
   /* Draw Eliminations */
-  for el-strat-name in pin-names {
+  for el-strat-name in pin-strats {
     let fill = if-else(el-strat-name.at(1) == "1", colors.he, colors.ve) 
     let this-just = eljust.at(el-strat-name)
     pinit-line(
@@ -173,9 +182,9 @@
       end-dx: this-just.x.at(1),
       start-dy: this-just.y.at(0),
       end-dy: this-just.y.at(1),
-      el-strat-name + "--start", 
-      el-strat-name + "--end",
+      elim-id + el-strat-name + "--start", 
+      elim-id + el-strat-name + "--end",
     )
   }
-  
+  _nfg-counter.step()
 }

@@ -16,5 +16,5 @@ ToDo: check that `cont` is math, possibly increase functionality to text for con
 #let hul(cont, col: red) = { cul(cont, col) }
 #let vul(cont, col: blue) = { cul(cont, col) }
 
-#let hul-fc(cont, col: red) = { cul(cont, col, tcol: col) }
-#let vul-fc(cont, col: blue) = { cul(cont, col, tcol: col) }
+#let hful(cont, col: red) = { cul(cont, col, tcol: col) }
+#let vful(cont, col: blue) = { cul(cont, col, tcol: col) }

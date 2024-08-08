@@ -1,5 +1,7 @@
 #import table: cell
 #import "table_utils.typ": blank_cells
+#import "programming_utils.typ": if-else
+
 
 // Helper function to format player 1's name
   // Default color is red
