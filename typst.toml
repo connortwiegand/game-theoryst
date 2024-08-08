@@ -8,3 +8,4 @@ description = "A package for typesetting games in Typst."
 disciplines = [ "economics", "education", "mathematics" ]
 repository = "https://github.com/connortwiegand/game-theoryst"
 keywords = [ "game-theory", "game-tables", "payoff-matrix", "normal-form", "strategic-form" ]
+exclude = ["doc/"]
