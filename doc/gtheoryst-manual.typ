@@ -14,7 +14,7 @@
   it
 }
 
-#heading(outlined: false)[Game Theoryst] <title>
+#heading(outlined: false)[Game-Theoryst] <title>
 
 #heading(level: 3, outlined: false)[Connor T. Wiegand] <author>
 
