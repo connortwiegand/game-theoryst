@@ -2,122 +2,122 @@
 
 A package for typesetting games in Typst. 
 
-Work in progress. 
+Work in progress -- _coming soon!_
 
 ## Overview
 
-The main function to make strategic form games is `sgamex` (from Martin J. Osbourne's Latex package of the same name). For a basic 2x2 game, you can do 
+The main function to make strategic (or **normal**) form games is `nfg`. For a basic 2x2 game, you can do 
 ```typ
-#sgamex(
-  names: ("Jack", "Diane"),
-  strats1: ($C$, $D$)
-  strats2: ($C$, $D$),
+#nfg(
+  players: ("Jack", "Diane"),
+  s1: ($C$, $D$)
+  s2: ($C$, $D$),
   [$10, 10$], [$2, 20$], 
   [$20, 2$], [$5, 5$],
 )
 ```
 
+### Color
+
+By default, player names, mixed-strategy parameters (called _mixings_), and elimination lines are shown in color. These colors can be turned off at the method-level by passing `bw: true`, or at the document level by running the state helper-function `#colorless()`.
+
+`nfg` accepts custom colors for all of the aforementioned parameters by passing a `dictionary` of colors to the `custom-fills` arg. The keys for this dictionary are as follows (`<defaults>`):
+- `hp` -- "horizontal player" (red)
+- `vp` -- "vertical player" (blue)
+- `hm` -- "hor. mixing" (#e64173)
+- `vm` -- "ver. mixing" (eastern)
+- `he` -- "hor. elimination" line (orange)
+- `ve` -- "ver. elimination" line (olive)
+
+
 ### Underlining
-The default functions for underlining, `hul()` and `vul()`, can be wrapped around math-wrapped (`$..$`) values in the payoff matrix. The underlines are colored by default according to the default colors for names. 
+The package imports a small set of underlining utility functions.
+
+The primary functions for underlining are 
+- `hul()` -- _Horizontal Underline_
+- `vul()` -- _Vertical Underline_
+- `bul()` -- _Black Underline_
+These can be wrapped around values in math-mode (`$..$`) within the payoff matrix. The underlines for `hul` and `vul` are colored by default according to the default colors for names, but they accept an optional `col` parameter for changing the color of the underline. `bul()` produces a black underline. 
 ```typ
-#sgamex(
-  names: ("Jack", "Diane"),
-  strats2: ($x$, $y$, $z$),
-  strats1: ($a$, $b$),
+#nfg(
+  players: ("Jack", "Diane"),
+  s2: ($x$, $y$, $z$),
+  s1: ($a$, $b$),
   [$hul(0),vul(0)$], [$1,1$], [$2,2$],
   [$3,3$], [$4,4$], [$5,5$],
 )
 ```
-By default, these commands leave the numbers themselves black, but boldfaces them. The color of the number can be changed via the general `cul()` command, which takes in content, an underline color (`col`), and the color for the value (`tcol()`). For instance, 
+By default, these commands leave the numbers themselves black, but boldfaces them. _Full Color_ versions of `hul` and `vul`, which color the numbers and under-lines identically, are available via `hul-fc()` and `vul-fc()`. Like their counterparts, they accept an optional `col` command for the color. 
+
+Both of the colors can be modified individually via the general `cul()` command, which takes in content (`cont`), an underline color (`ucol`), and the color for the text value (`tcol()`). For instance, 
 ```typ
 #let new-ul(cont, col: olive, tcol: fuchsia) = { cul(cont, col, tcol) }
 ```
 will define a new command which underlines in olive and sets the text (math) color to fuchsia. 
 
+
 ### Cell Customization
 Since the payoffs are implemented as argument sinks (`..args`) which are passed directly to Typst's `#table()`, underlining of non-math can be accomplished via the standard `#underline()` command. Similarly, any of the payoff cells can be customized by using `table.cell()` directly. For instance, `table.cell(fill: yellow.lighten(30%), [$1, 1$])` can be used to highlight a specific cell. 
 
 #### Padding
-There are edge cases where the default padding may be off. This can be mended by passing the named `inset` argument to `sgamex`. `inset` either needs to be a single `length` or a `dictionary` with `x`/`y` keys. This should represent how much _additional_ padding you want.  
+There are edge cases where the default padding may be off. These can be mended by passing the optional `pad` argument to `nfg()`. This should represent how much **_additional_** padding you want.  The `pad` arg. is interpreted as follows: 
+- If a `length` is provided, it assumes you want that much length added to all cell walls
+- If an array of the form `(L1, L2)` is provided, it assumes you want padding a horizontal (`x`) padding of `L1` and a vertical padding (`y`) of `L2`
+- If a `dictionary` is provided, it operates identically to that of the array, but you must specify the `x`/`y` keys yourself 
+
+
+#### Cell Sizing
+Cell are automatically sized to equal heights/widths according to the longest/tallest content. If you want to avoid this behavior, pass `lazy-cells: true` to `nfg`. This behavior can be combined with the custom `padding` argument. 
+
+### Mixed Strategies
+You can optionally mark mixed strategies that a player will in a `nfg` using the `mixing` argument. This can be a `dictionary` with `hmix` and `vmix` keys, or an `array`, interpreted as a dictionary with the aforementioned keys in the `(hmix: , vmix: )` order. The values/entries here should be arrays which mimic `s1` and `s2` in size, with some parameter denoting the proportion of time the relevant player uses that strategy. If you would like to omit a strategy from this markup, pass `[]` in it's place. 
+
+For example, in a 2x3 game, the following dictionary would add mixing parameters to both of player 1's strategies and player 2's first and third strategies:
+```typ
+(hmix: ($p$, $1-p$), vmix: ($q$, [], $1-q$))
+```
 
 ### Iterated Deletion (Elimination) of Dominated Strategies
-You can use the `pinit` package to cross out lines. I typically have to tweak the `dx`/`dy` parameters by hand:
+You can use the `pinit` package to cross out lines, semantically eliminating strategies. `pinit` comes pre-imported with `gametheoryst` by default.
+
+You can tell `nfg` which strategies to eliminate with the `eliminations` argument and the corresponding `ejust` helper-argument. The `eliminations` argument is simply an `array` of `strings` of the form `"s<i><j>"`, where `<i>` is the player -- 1 or 2 -- and `<j>` is player `i`'s `<j>`th strategy, in left-to-right / top-to-bottom order _starting at 1_. These strategy strings represent the rows/columns which you want to eliminate. For instance, `("s12", "s21")` denotes an elimination of player 1's second strategy as well as player 2's first strategy. 
+
+Due to `context` dependence, the lines typically need manual adjustments, which can be done via the `ejust` arg. `ejust` needs to be a dictionary with keys of matching those strings present in `eliminations` (`s11`, `s21`, etc.). The values of one of these dictionary entries is itself a dictionary: one with `x` and `y` keys. Each of these keys needs an array consisting of 2 lengths, corresponding to the starting/ending `dx/dy` adjustments from `pinit-line`. 
+
+For example, one such `ejust` argument could be `("s12": (x: (5pt, -5pt), y: (-10pt, 3pt)))`. This says to adjust the "s12" elimination line by `5pt` in the x direction and `-10pt` in the y direction for the starting (strategy-) side of the line, and adjust by `-5pt` in x and `3pt` in y on the ending (payoff-) side of the line. 
 
 ```typ
-#sgamex(
-    names: ("A", "B"),
-    strats1: ([$N$] , [$S$] + pin("30"), [$E$] + pin("40"), [$W$] + pin("00")),
-    strats2: ([$W$] + pin("10"), [$E$] + pin("50"), [$F$] + pin("60"), [$A$]),
+#nfg(
+    players: ("A", "B"),
+    s1: ([$N$], [$S$], [$E$], [$W$] ),
+    s2: ([$W$], [$E$], [$F$], [$A$]),
+    mixings: ("s12", "s13", "s14", "s21", "s22", "s23"),
     [$6, 4$], [$7, 3$], [$5, 5$], [$6, 6$],
-    [$7, 3$], [$2, 7$], [$4, 6$], [$5, 5$] + pin("31"),
-    [$8, 2$], [$6, 4$], [$3, 7$], [$2, 8$] + pin("41"),
-    [$3, 7$] + pin("11"), [$5, 5$] + pin("51"), [$4, 6$] + pin("61"), [$5, 5$] + pin("01"),
+    [$7, 3$], [$2, 7$], [$4, 6$], [$5, 5$] ,
+    [$8, 2$], [$6, 4$], [$3, 7$], [$2, 8$] ,
+    [$3, 7$], [$5, 5$], [$4, 6$], [$5, 5$],
   )
-
-#pinit-line(
-  stroke: 1.5pt + maroon, 
-  start-dy: -3pt,
-  end-dy: -3pt,
-  start-dx: 2pt,
-  end-dx: 7pt,
-  "00","01")
-
-  #pinit-line(
-  stroke: 1.5pt + maroon, 
-  start-dy: 2pt,
-  end-dy: 3pt,
-  start-dx: -5pt,
-  end-dx: -8pt,
-  "10","11")
-
-  #pinit-line(
-  stroke: 1.5pt + maroon, 
-  start-dy: -3pt,
-  end-dy: -3pt,
-  start-dx: 2pt,
-  end-dx: 5pt,
-  "20","21")
-
-  #pinit-line(
-  stroke: 2pt + maroon, 
-  start-dy: -2pt,
-  end-dy: -2pt,
-  start-dx: 5pt,
-  end-dx: 5pt,
-  "30","31")
-
-  #pinit-line(
-  stroke: 2pt + maroon, 
-  start-dy: -2pt,
-  end-dy: -2pt,
-  start-dx: 5pt,
-  end-dx: 5pt,
-  "40","41")
-
-  #pinit-line(
-  stroke: 2pt + maroon, 
-  start-dy: 4pt,
-  end-dy: 5pt,
-  start-dx: -2pt,
-  end-dx: -6pt,
-  "50","51")
-
-  #pinit-line(
-  stroke: 2pt + maroon, 
-  start-dy: 4pt,
-  end-dy: 5pt,
-  start-dx: -5pt,
-  end-dx: -9pt,
-  "60","61")
 ```
+
+### Debugging
+
+If you want to see all of the lines for the table, including the ones for a players, strategies, and mixings, set the following at the top of your document.  
+```typ 
+#set table.cell(stroke: (thickness: auto))
+```
+
+Note that cells are always present for mixings, they just have 0 width/height when no mixings of a specific variety are provided. 
 
 ### Importing
 To be published soon.
 
 ~~Simply insert the following into your Typst code:~~ (not yet!)
 ```typ
-#import "@preview/game-theoryst:0.1.0"
+#import "@preview/game-theoryst:0.1.0": *
 ```
+
+This imports the `nfg()` function as well as the underlining methods. 
+If you want to tweak the helper functions for generating an `nfg`, import them explicitly through the `utils/` directory. 
 
 ## License
 game-theoryst
