@@ -1,4 +1,4 @@
 .vscode
-*.pdf
-src/*.pdf
+src/**/*.pdf
 _*
+doc/gallery/*.pdf
