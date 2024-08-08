@@ -20,7 +20,7 @@ The main function to make strategic (or **normal**) form games is `nfg`. For a b
 )
 ```
 
-![Basic Example](doc/gallery/simple-example.png)
+<img alt="Basic Example" src="doc/gallery/simple-example.png" width="256">
 
 
 ### Importing
@@ -55,7 +55,7 @@ If you want to tweak the helper functions for generating an `nfg`, import them e
 )
 ```
 
-![Full Example](doc/gallery/full-example.png)
+<img alt="Full Example" src="doc/gallery/full-example.png" width="256">
 
 
 ### Color
@@ -129,7 +129,7 @@ For example:
 )
 ```
 
-![Mixed Parameter Example](doc/gallery/mix-ex.png)
+<img alt="Mixed Parameter Example" src="doc/gallery/mix-ex.png" width="256">
 
 ### Iterated Deletion (Elimination) of Dominated Strategies
 You can use the `pinit` package to cross out lines, semantically eliminating strategies. `pinit` comes pre-imported with `gametheoryst` by default.
@@ -162,8 +162,8 @@ For example, one such `ejust` argument could be `("s12": (x: (5pt, -5pt), y: (-1
   [$3,7$], [$5,5$], [$4,6$], [$5,5$],
 )
 ```
-
-![Elimination Example](doc/gallery/elim-ex.png)
+<img alt="Elimination Example" src="doc/gallery/elim-ex.png" width="256">
+<!-- [Elimination Example](doc/gallery/elim-ex.png) -->
 
 ### Debugging
 
