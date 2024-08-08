@@ -1,2 +1,2 @@
-#import "sgame.typ": sgamex
+#import "nfg.typ": *
 #import "ul.typ": *
