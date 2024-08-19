@@ -1,10 +1,8 @@
 # Game-Theoryst
 
-A package for typesetting games in Typst. 
+A Typst package for typesetting beautiful games with ease. 
 
 Full manual available [here](./doc/gtheoryst-manual.pdf)
-
-Work in progress -- _coming soon!_
 
 ## Overview
 
@@ -25,7 +23,7 @@ The main function to make strategic (or **normal**) form games is `nfg`. For a b
 
 ### Importing
 
-~~Simply insert the following into your Typst code:~~ (_Coming soon_)
+Simply insert the following into your Typst code:
 
 ```typ
 #import "@preview/game-theoryst:0.1.0": *
