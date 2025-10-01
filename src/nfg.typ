@@ -3,7 +3,7 @@
 #import "utils/programming_utils.typ": *
 #import "utils/styling_utils.typ": *
 #import "utils/table_utils.typ": *
-#import "@preview/pinit:0.1.4": *
+#import "@preview/pinit:0.2.2": *
 
 // State + setting function for black-white vs color
 #let _bw = state("no-colors", false)
