@@ -59,10 +59,10 @@
 
     /* Mixed Strategies */
     let (hmix, vmix) = {
-      if type(mixings) == "array" { 
+      if type(mixings) == array { 
         assert(mixings.len() == 2, message: "`mixings` must be a dictionary or an array of length 2") 
         mixings
-      } else if type(mixings) == "dictionary" {
+      } else if type(mixings) == dictionary {
         assert(("hmix", "vmix").any(k => k in mixings.keys()), message: "Must provide one of (`hmix`, `vmix`) keys to mixings")
         let dmixings = (hmix: none, vmix: none)
         for p in mixings.pairs() { dmixings.insert(..p) }
@@ -102,12 +102,12 @@
     
     // Format pad => cpad arg
     let cpad = {
-      if type(pad) == "array" { 
+      if type(pad) == array { 
         assert(pad.len() == 2, message: "When padding is an array, it must be of length 2")
         ("x": pad.at(0), "y": pad.at(1)) 
-      } else if type(pad) == "length" {
+      } else if type(pad) == length {
         ("x": pad, "y": pad) 
-      } else if type(pad) == "dictionary" {
+      } else if type(pad) == dictionary {
         req-keys(pad, ("x", "y"))
       } else { req-keys((:), ("x", "y")) }
     }
